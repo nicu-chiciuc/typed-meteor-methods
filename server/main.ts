@@ -1,5 +1,6 @@
 import { Meteor } from 'meteor/meteor';
 import { Links } from '/imports/api/links';
+import '/imports/api/methods/getNumber';
 
 function insertLink(title: string, url: string) {
   Links.insert({ title, url, createdAt: new Date() });

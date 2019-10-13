@@ -1,21 +1,30 @@
-import React from 'react';
+import React from "react";
+import { Meteor } from "meteor/meteor";
 
 export default class Hello extends React.Component {
   state = {
-    counter: 0,
-  }
+    randomNumber: null
+  };
 
-  increment() {
-    this.setState({
-      counter: this.state.counter + 1
-    });
+  componentWillMount() {
+    Meteor.call(
+      "global.getRandomNumber",
+      { min: 5, max: 20 },
+      (error: Meteor.Error, data: number) => {
+        if (data) {
+          this.setState({ randomNumber: data });
+        }
+      }
+    );
   }
 
   render() {
     return (
       <div>
-        <button onClick={() => this.increment()}>Click Me</button>
-        <p>You've pressed the button {this.state.counter} times.</p>
+        <p>
+          Random number:{" "}
+          {this.state.randomNumber === null ? "N/A" : this.state.randomNumber}
+        </p>
       </div>
     );
   }
