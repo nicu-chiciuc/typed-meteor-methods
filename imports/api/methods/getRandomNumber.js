@@ -9,3 +9,5 @@ const getRandomNumber = new ValidatedMethod({
     return Math.round(Math.random() * (max - min) + min);
   }
 });
+
+export { getRandomNumber };
