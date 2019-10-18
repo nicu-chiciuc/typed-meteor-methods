@@ -1,5 +1,6 @@
 import React from "react";
 import { Meteor } from "meteor/meteor";
+import callAsync from "../utils/callAsync";
 
 export default class App extends React.Component {
   state = {
@@ -7,15 +8,21 @@ export default class App extends React.Component {
   };
 
   componentWillMount() {
-    Meteor.call(
-      "global.getRandomNumber",
-      { min: 5, max: 20 },
-      (error: Meteor.Error, data: number) => {
-        if (data) {
-          this.setState({ randomNumber: data });
-        }
-      }
-    );
+    // Meteor.call(
+    //   "global.getRandomNumber",
+    //   { min: 5, max: 20 },
+    //   (error: Meteor.Error, data: number) => {
+    //     if (data) {
+    //       this.setState({ randomNumber: data });
+    //     }
+    //   }
+    // );
+
+    callAsync("global.getRandomNumber", { min: 5, max: 20 })
+      .then(randomNumber => {
+        this.setState({ randomNumber });
+      })
+      .catch(() => {});
   }
 
   render() {

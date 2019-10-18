@@ -1,30 +1,33 @@
-// Type definitions for mdg:validated-method meteor package
-// Project: https://atmospherejs.com/mdg/validated-method
-// Definitions by:  Dave Allen <https://github.com/fullflavedave>
+declare module "meteor/mdg:validated-method" {
+  import { DDPCommon } from "meteor/ddp";
+  import { Meteor } from "meteor/meteor";
 
+  type FirstArgument<T> = T extends (val: infer R) => any ? R : never;
 
-interface ValidatedMethod_Static {
-  new(options: {
+  type ValidatedMethodOptions<TRunArg, TRunReturn> = {
     name: string;
     mixins?: Function[];
-    validate: (args: { [key: string]: any; }) => void; // returned from SimpleSchemaInstance.validator() method;
+
+    validate: ((args: TRunArg) => void) | null; // returned from SimpleSchemaInstance.validator() method;
     applyOptions?: {
       noRetry: boolean;
       returnStubValue: boolean;
       throwStubExceptions: boolean;
       onResultReceived: (result: any) => void;
-      [key: string]: any };
-    run: (args: { [key: string]: any; }) => void;
-  }): ValidatedMethod_Instance;
-}
+      [key: string]: any;
+    };
+    run: (this: DDPCommon.MethodInvocation, arg: TRunArg) => TRunReturn;
+  };
 
-interface ValidatedMethod_Instance {
-  call(args: { [key: string]: any; }, cb?: (error: any, result: any) => void ): void;
-  _execute(context: { [key: string]: any; }, args: { [key: string]: any; }): void;
-}
+  export class ValidatedMethod<TRunArg, TRunReturn> {
+    constructor(options: ValidatedMethodOptions<TRunArg, TRunReturn>);
 
-declare const ValidatedMethod: ValidatedMethod_Static;
+    call(args: TRunArg): TRunReturn;
+    call(
+      args: TRunArg,
+      callback: (error: Meteor.Error, result: TRunReturn) => void
+    ): void;
 
-declare module 'meteor/mdg:validated-method' {
-  export const ValidatedMethod: ValidatedMethod_Static;
+    _execute(context: { [key: string]: any }, args: TRunArg): void;
+  }
 }
