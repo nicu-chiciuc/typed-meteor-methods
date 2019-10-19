@@ -2,6 +2,15 @@ declare module "meteor/mdg:validated-method" {
   import { DDPCommon } from "meteor/ddp";
   import { Meteor } from "meteor/meteor";
 
+  export type FirstArgument<T> = T extends (val: infer R) => any ? R : never;
+
+  export type ValidatedMethodName<T> = T extends ValidatedMethod<any, any, infer R> ? R : never;
+  export type ValidatedMethodArg<T> = T extends ValidatedMethod<infer R, any, any> ? R : never;
+  export type ValidatedMethodReturn<T> = T extends ValidatedMethod<any, infer R, any> ? R : never;
+  export type ValidatedMethodAsFunc<T extends ValidatedMethod<any, any, any>> = {
+    [K in ValidatedMethodName<T>]: (arg: ValidatedMethodArg<T>) => ValidatedMethodReturn<T>;
+  };
+
   type ValidatedMethodOptions<TRunArg, TRunReturn, TName extends string> = {
     // Force the name to be a string literal
     name: TName;
