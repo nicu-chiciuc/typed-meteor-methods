@@ -71,6 +71,7 @@ export default class App extends React.Component {
 
 ![alt text](./img/simple_output.png "Screenshot")
 
+
 ```javascript
 import { Meteor } from "meteor/meteor";
 import { getRandomNumber } from "../imports/api/methods/getRandomNumber";
@@ -190,3 +191,74 @@ Most of the articles and github repositories I've found relied on the existence 
 This would be the smart approach forcing to catalogue all the methods by hand and afterwards keep them method api interface and the implementation in sync seemed like too much of a hastle. A better approach would be to leave the implementation as they are and extract the needed types for further use.
 
 ## Typing the name of the function
+
+Now comes the cool part. The `ValidatedMethods` type definition has to be augmented so that it knows the name of the function as a string literal as opposed to a string.
+Compared to most other typed languages, Typescript has the concept of string literals, which allows to, for example type semaphores colors like so:
+
+```typescript
+const semaphore: 'yellow' | 'red' | 'green' = 'green';
+```
+
+An additional generic type variable seems to do the trick:
+
+```typescript
+type ValidatedMethodOptions<TRunArg, TRunReturn, TName extends string> = {
+  // Force the name to be a string literal
+  name: TName;
+  mixins?: Function[];
+
+  validate: ((args: TRunArg) => void) | null; // returned from SimpleSchemaInstance.validator() method;
+  applyOptions?: {
+    noRetry: boolean;
+    returnStubValue: boolean;
+    throwStubExceptions: boolean;
+    onResultReceived: (result: any) => void;
+    [key: string]: any;
+  };
+  run: (this: DDPCommon.MethodInvocation, arg: TRunArg) => TRunReturn;
+};
+
+export class ValidatedMethod<TRunArg, TRunReturn, TName extends string> {
+  constructor(options: ValidatedMethodOptions<TRunArg, TRunReturn, TName>);
+
+  call(args: TRunArg): TRunReturn;
+  call(args: TRunArg, callback: (error: Meteor.Error, result: TRunReturn) => void): void;
+
+  _execute(context: { [key: string]: any }, args: TRunArg): void;
+}
+```
+
+Typescript correctly infers the type of name as a string literal instead of a string:
+![alt text](./img/fully_typed_method.png "Screenshot")
+The only thing that has to be typed is the argument to the run function, and maybe its return type if it has to be enforced.
+
+
+### Notes on the TName
+When I started writing this article I mistakenly assumed that Typescript is inferring the type of name as a simple string. To overcome this problem I had to do some tricks to enforce it.
+
+We were using the following code:
+
+```typescript
+export type UnionToIntersection<U> = (U extends any ? (k: U) => void : never) extends ((k: infer I) => void)
+  ? I
+  : never;
+export type CheckForUnion<T, TErr, TOk> = [T] extends [UnionToIntersection<T>] ? TOk : TErr;
+```
+
+and then type the `name` as follow:
+
+```typescript
+type ValidatedMethodOptions<TRunArg, TRunReturn, TName extends string> = {
+// Force the name to be a string literal
+name: TName & CheckForUnion<TName, never, {}>;;
+
+...
+} 
+```
+
+You can read more in [this StackOverflow answer](https://stackoverflow.com/a/56375136/2659549)
+
+
+# Creating a unified API
+Even though each specific method is fully typed, we somehow need to gather all the instances and create a unified type so that `callAsync` knows what's going on.
+

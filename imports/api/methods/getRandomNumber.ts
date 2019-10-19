@@ -1,11 +1,12 @@
 import { ValidatedMethod } from "meteor/mdg:validated-method";
 
+
 const getRandomNumber = new ValidatedMethod({
   name: "global.getRandomNumber",
 
   validate: () => {},
 
-  run({ min, max }) {
+  run({ min, max }: { min: number; max: number }) {
     return Math.round(Math.random() * (max - min) + min);
   }
 });
