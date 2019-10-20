@@ -2,12 +2,14 @@ import { Meteor } from "meteor/meteor";
 import { KnownMethods } from "../methodTypes";
 import { FirstArgument } from "meteor/mdg:validated-method";
 
-const callAsync = <TName extends keyof KnownMethods = keyof KnownMethods>(
-  methodName: TName,
-  arg: FirstArgument<KnownMethods[TName]>
+type UnpackPromise<T> = T extends Promise<infer U> ? U : T;
+
+const callAsync = <K extends keyof KnownMethods = keyof KnownMethods>(
+  methodName: K,
+  arg: FirstArgument<KnownMethods[K]>
 ) =>
-  new Promise<ReturnType<KnownMethods[TName]>>((resolve, reject) =>
-    Meteor.call(methodName, arg, (error: Error, result: any) => {
+  new Promise<UnpackPromise<ReturnType<KnownMethods[K]>>>((resolve, reject) =>
+    (Meteor.call as any)(methodName, arg, (error: Error, result: any) => {
       if (error) {
         reject(error);
       } else {

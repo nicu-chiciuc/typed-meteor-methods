@@ -23,6 +23,18 @@ export default class App extends React.Component {
         this.setState({ randomNumber });
       })
       .catch(() => {});
+
+    callAsync("global.reverseString", "something").then(value => {
+      console.log(value);
+    });
+
+    Meteor.call("global.getRandomNumbe", { min: 4, max: 5 }, (error, data) => {
+      console.log(data);
+    });
+
+    callAsync("global.getStringLength", "something").then(len => {
+      console.log(len);
+    });
   }
 
   render() {

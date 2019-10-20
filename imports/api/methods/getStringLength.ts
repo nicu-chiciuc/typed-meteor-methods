@@ -3,10 +3,10 @@ import { ValidatedMethod } from "meteor/mdg:validated-method";
 const getStringLength = new ValidatedMethod({
   name: "global.getStringLength",
 
-  validate: () => {},
+  validate: null,
 
   run(str: string) {
-    return str.length;
+    return Promise.resolve(str.length);
   }
 });
 
