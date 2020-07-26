@@ -1,6 +1,6 @@
 {
   "name": "typed-meteor-methods",
-  "private": true,
+  "version": "0.0.1",
   "scripts": {
     "start": "meteor run",
     "test": "meteor test --once --driver-package meteortesting:mocha",
